@@ -16,7 +16,7 @@ pipeline {
                 "provider" :"aws",
                 "cloudaccount": "aws"
             }''',
-            url: http://10.148.27.54:8090/api/v1/workspaces?projectuuid=project-KCuCBQsi
+            url: 'http://10.148.27.54:8090/api/v1/workspaces?projectuuid=project-KCuCBQsi'
             }
         }
         stage('Test') {
