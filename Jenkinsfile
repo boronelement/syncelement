@@ -1,33 +1,40 @@
 pipeline {
-    agent any
-
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building..'
-                def response =httpRequest acceptType: 'APPLICATION_JSON', contentType: 'APPLICATION_JSON',
-            httpMode: 'POST', quiet: true,
-            requestBody: '''{
-               
-                "name": "jenkinsworkspace1",
-                "description": "jenkinsworkspace1",
-                "type" : "Deploy",
-                "owner" : "boron.element",
-                "provider" :"aws",
-                "cloudaccount": "aws"
-            }''',
-            url: 'http://10.148.27.54:8090/api/v1/workspaces?projectuuid=project-KCuCBQsi'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
-            }
-        }
+  environment {
+    dockerimagename = "boronelement/nodeapp"
+    dockerImage = ""
+  }
+  agent any
+  stages {
+    stage('Checkout Source') {
+      steps {
+        git 'https://github.com/boronelement/syncelement.git'
+      }
     }
+    stage('Build image') {
+      steps{
+        script {
+          dockerImage = docker.build dockerimagename
+        }
+      }
+    }
+    stage('Pushing Image') {
+      environment {
+               registryCredential = 'dockerhub-credentials'
+           }
+      steps{
+        script {
+          docker.withRegistry( 'https://registry.hub.docker.com', registryCredential ) {
+            dockerImage.push("latest")
+          }
+        }
+      }
+    }
+    stage('Deploying React.js container to Kubernetes') {
+      steps {
+        script {
+          kubernetesDeploy(configs: "deployment.yaml", "service.yaml")
+        }
+      }
+    }
+  }
 }
