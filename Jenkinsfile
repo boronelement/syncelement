@@ -7,7 +7,7 @@ pipeline {
   stages {
     stage('Checkout Source') {
       steps {
-        git 'https://github.com/boronelement/syncelement.git'
+        git branch: 'main','https://github.com/boronelement/syncelement.git'
       }
     }
     stage('Build image') {
